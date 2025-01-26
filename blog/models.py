@@ -9,9 +9,28 @@ class PostQuerySet(models.QuerySet):
         return posts_at_year
 
 
+    def popular(self, count):
+        return self.annotate(
+            likes_count=Count('likes')
+        ).order_by('-likes_count')[:count]
+
+
+    def fetch_with_comments_count(self):
+        """Функция объединяет в себе стандартные методы, благодаря к чему, они все оставются в классе, и не надо их каждый раз прописывать"""
+        most_popular_posts_ids = [post.id for post in self]
+        posts_with_comments = Post.objects.filter(
+            id__in=most_popular_posts_ids
+        ).annotate(comments_count=Count('comments'))
+        ids_and_comments = posts_with_comments.values_list('id', 'comments_count')
+        count_for_id = dict(ids_and_comments)
+        for post in self:
+            post.comments_count = count_for_id[post.id]
+        return list(self)
+
+
 class TagQuerySet(models.QuerySet):
-    def popular(self):
-        popular_tag = self.annotate(tags_count=Count('posts')).order_by(('-tags_count'))
+    def popular(self, count):
+        popular_tag = self.annotate(tags_count=Count('posts')).order_by(('-tags_count'))[:count]
         return popular_tag
 
 
