@@ -3,17 +3,16 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.db.models import Count
 
+
 class PostQuerySet(models.QuerySet):
     def year(self, year):
         posts_at_year = self.filter(published_at__year=year).order_by('published_at')
         return posts_at_year
 
-
     def popular(self, count):
         return self.annotate(
             likes_count=Count('likes')
         ).order_by('-likes_count')[:count]
-
 
     def fetch_with_comments_count(self):
         """Функция объединяет в себе стандартные методы, благодаря к чему, они все оставются в классе, и не надо их каждый раз прописывать"""
@@ -32,6 +31,9 @@ class TagQuerySet(models.QuerySet):
     def popular(self, count):
         popular_tag = self.annotate(tags_count=Count('posts')).order_by(('-tags_count'))[:count]
         return popular_tag
+
+    def fetch_posts_count(self):
+        return self.annotate(posts_count=Count('posts'))
 
 
 class Post(models.Model):
