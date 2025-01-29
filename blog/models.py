@@ -9,10 +9,10 @@ class PostQuerySet(models.QuerySet):
         posts_at_year = self.filter(published_at__year=year).order_by('published_at')
         return posts_at_year
 
-    def popular(self, count=None):
+    def popular(self):
         return self.annotate(
             likes_count=Count('likes')
-        ).order_by('-likes_count')[:count]
+        ).order_by('-likes_count')
 
     def fetch_with_comments_count(self):
         """Функция объединяет в себе стандартные методы, благодаря к чему, они все оставются в классе, и не надо их каждый раз прописывать"""
